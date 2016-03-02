@@ -5,9 +5,11 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,6 +27,8 @@ import java.util.logging.Logger;
 public class BufferedIOBenchmark {
 
 	static final Logger LOG = Logger.getLogger(BufferedIOBenchmark.class.getName());
+        
+        private CSVWriter csv;
 
 	/**
 	 * This enum is used to describe the 4 different strategies for doing the IOs
@@ -39,6 +43,16 @@ public class BufferedIOBenchmark {
 	final static String FILENAME_PREFIX = "test-data"; // we will write and read test files at this location
 	final static long NUMBER_OF_BYTES_TO_WRITE = 1024 * 1024 * 10; // we will write and read 10 MB files
 	
+        public BufferedIOBenchmark(){
+            FileWriter os = null;
+            try{
+                os = new FileWriter("benchmark.csv");
+            } catch (IOException ex) {
+                    LOG.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            csv = new CSVWriter(os);
+        }
+        
 	/**
 	 * This method drives the generation of test data file, based on the parameters passed. The method opens a
 	 * FileOutputStream. Depending on the strategy, it wraps a BufferedOutputStream around it, or not. The method
@@ -74,7 +88,9 @@ public class BufferedIOBenchmark {
 				LOG.log(Level.SEVERE, ex.getMessage(), ex);
 			}
 		}
-		LOG.log(Level.INFO, "  > Done in {0} ms.", Timer.takeTime());
+                float takeTime = Timer.takeTime();
+		LOG.log(Level.INFO, "  > Done in {0} ms.", takeTime);
+                csv.write(takeTime);
 	}
 	
 	/**
@@ -149,8 +165,9 @@ public class BufferedIOBenchmark {
 				LOG.log(Level.SEVERE, ex.getMessage(), ex);
 			}
 		}
-		LOG.log(Level.INFO, "  > Done in {0} ms.", Timer.takeTime());
-
+                float takeTime = Timer.takeTime();
+		LOG.log(Level.INFO, "  > Done in {0} ms.", takeTime);
+                csv.write(takeTime);
 	}
 
 	/**
@@ -181,6 +198,10 @@ public class BufferedIOBenchmark {
 		
 		LOG.log(Level.INFO, "Number of bytes read: {0}", new Object[]{totalBytes});
 	}
+        
+        public void close(){
+            csv.close();
+        }
 
 	/**
 	 * @param args the command line arguments
@@ -217,6 +238,8 @@ public class BufferedIOBenchmark {
 		bm.consumeTestData(IOStrategy.BlockByBlockWithoutBufferedStream, 50);
 		bm.consumeTestData(IOStrategy.BlockByBlockWithoutBufferedStream, 5);
 		bm.consumeTestData(IOStrategy.ByteByByteWithoutBufferedStream, 0);
+                
+                bm.close();
 	}
 
 }
