@@ -14,39 +14,16 @@ import java.io.OutputStreamWriter;
  */
 public class CSVWriter {
     OutputStreamWriter os;
-    int cnt = 0;
     
     public CSVWriter(OutputStreamWriter os){
         this.os = os;
     }
 
-    public void write(float value){
-        if(cnt%4 == 0 && cnt != 0)
-            newLine();
-        try{
-            os.write(String.valueOf(value) + ";");
-        }
-        catch(IOException e){
-            e.printStackTrace();
-        }
-        cnt++;
+    public void write(String value) throws IOException{
+            os.write(value);
     }
     
-    private void newLine(){
-        try{
-            os.write("\r\n");
-        }
-        catch(IOException e){
-            e.printStackTrace();
-        }
-    }
-    
-    public void close(){
-        try{
-            os.close();
-        }
-        catch(IOException e){
-            e.printStackTrace();
-        }   
+    public void close() throws IOException{
+        os.close();
     }
 }
