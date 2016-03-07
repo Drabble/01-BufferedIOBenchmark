@@ -9,7 +9,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,27 +27,26 @@ public class BufferedIOBenchmark {
 
 	static final Logger LOG = Logger.getLogger(BufferedIOBenchmark.class.getName());
         
-        private CSVWriter csv;
+        private BufferedIObenchmarkCSVRecorder csv;
         
         public BufferedIOBenchmark() throws IOException{
             FileWriter os = null;
             try{
                 os = new FileWriter("benchmark.csv");
             } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, ex.getMessage(), ex);
+                LOG.log(Level.SEVERE, ex.getMessage(), ex);
             }
-            csv = new CSVWriter(os);
-            csv.write("operation,strategy,blockSize,fileSizeInBytes,durationInMs\n");
+            csv = new BufferedIObenchmarkCSVRecorder(os);
         }
 
 	/**
 	 * This enum is used to describe the 4 different strategies for doing the IOs
 	 */
 	public enum IOStrategy {
-		ByteByByteWithoutBufferedStream,
-		ByteByByteWithBufferedStream,
-		BlockByBlockWithoutBufferedStream,
-		BlockByBlockWithBufferedStream
+            ByteByByteWithoutBufferedStream,
+            ByteByByteWithBufferedStream,
+            BlockByBlockWithoutBufferedStream,
+            BlockByBlockWithBufferedStream
 	};
 
 	final static String FILENAME_PREFIX = "test-data"; // we will write and read test files at this location
@@ -91,7 +89,7 @@ public class BufferedIOBenchmark {
 		}
                 long takeTime = Timer.takeTime();
 		LOG.log(Level.INFO, "  > Done in {0} ms.", takeTime);
-                csv.write("WRITE" + "," + ioStrategy + "," + blockSize + "," + numberOfBytesToWrite + "," + takeTime + "\n");
+                csv.write(new BufferedIObenchmarkData("WRITE",ioStrategy.name(),blockSize,numberOfBytesToWrite,takeTime));
 	}
 	
 	/**
@@ -170,7 +168,7 @@ public class BufferedIOBenchmark {
 		}
                 long takeTime = Timer.takeTime();
 		LOG.log(Level.INFO, "  > Done in {0} ms.", takeTime);
-                csv.write("READ" + "," + ioStrategy + "," + blockSize + "," + totalBytes + "," + takeTime + "\n");
+                csv.write(new BufferedIObenchmarkData("READ",ioStrategy.name(),blockSize,totalBytes,takeTime));
 	}
 
 	/**
